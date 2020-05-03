@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Basemap technical documentation library</title>
+	<link rel="stylesheet" type="text/css" href="css/tutorial2.css">
+</head>
+<body>
+	<nav id="navbar">
+		<header>
+			<h1>Basemap Tutorial</h1>
+		</header>
+		<div>
+			<ul>
+				<li><a class="nav-link" href="#Basemap_Tutorial">Basemap Tutorial</a></li>
+				<li><a class="nav-link" href="#Drawing_the_first_map">Drawing the first map</a></li>
+				<li><a class="nav-link" href="#Managing_Projections">Managing Projections</a></li>
+				<li><a class="nav-link" href="#Basic_Functions">Basic Functions</a></li>
+				<li><a class="nav-link" href="#Working_with_shapefiles">Working with shapefiles</a></li>
+			</ul>
+		</div>
+	</nav>
+	<main id="main-doc">
+		<section id="Basemap_Tutorial" class="main-section">
+			<header><h1>Basemap Tutorial<h1></header>
+			<article>
+				<p>Basemap is a great tool for creating maps using python in a simple way. It’s a matplotlib extension, so it has got all its features to create data visualizations, and adds the geographical projections and some datasets to be able to plot coast lines, countries, and so on directly from the library.</p>
+				<p>Basemap has got some documentation, but some things are a bit more difficult to find. I started this documentation to extend a little the original documentation and examples, but it grew a little, and now covers many of the basemap possibilities.</p>
+			</article>
+		</section>
+		<section id="Drawing_the_first_map" class="main-section">
+			<header><h1>Drawing the first map</h1></header>
+			<article>
+				<code>from mpl_toolkits.basemap import Basemap 
+					import matplotlib.pyplot as plt
+					map = Basemap()
+					map.drawcoastlines()
+					plt.show()
+					plt.savefig('test.png')</code>
+				<p>The first two lines include the Basemap library and matplotlib. Both are necessary The map is created using the Basemap class, which has many options. Without passing any option, the map has the Plate Carrée projection centered at longitude and latitude = 0</p>
+				<p>After setting the map, we can draw what we want. In this case, the coast lines layer, which comes already with the library, using the method drawcoastlines() Finally, the map has to be shown or saved. The methods from mathplotlib are used. In this example, plt.show() opens a window to explore the result. plt.savefig(‘file_name’) would save the map into an image.</p>
+			</article>
+		</section>
+		<section id="Managing_Projections" class="main-section">
+			<header><h1>Managing Projections<h1></header>
+			<p>All maps must have a projection. The projection and its features are all assigned when the object Basemap is created. The way to do it is quite different from other libraries (i.e. GDAL), so understanding this point is very important for working with Basemap.</p>
+			<p>The projection argument sets the map projection to be used:</p>
+			<code>
+				from mpl_toolkits.basemap import Basemap
+				import matplotlib.pyplot as plt
+
+				map = Basemap(projection='cyl')
+
+				map.drawmapboundary(fill_color='aqua')
+				map.fillcontinents(color='coral',lake_color='aqua')
+				map.drawcoastlines()
+
+				plt.show()
+			</code>
+		</section>
+		<section id="Basic_Functions" class="main-section">
+			<header><h1>Basic Functions<h1></header>
+			<article>
+				<p>Drawing a point in a map</p>
+				<p>Drawing a point in a map is usually done using the plot method:</p>
+				<code>
+					from mpl_toolkits.basemap import Basemap
+					import matplotlib.pyplot as plt
+
+					map = Basemap(projection='ortho', 
+					              lat_0=0, lon_0=0)
+
+					map.drawmapboundary(fill_color='aqua')
+					map.fillcontinents(color='coral',lake_color='aqua')
+					map.drawcoastlines()
+
+					x, y = map(0, 0)
+
+					map.plot(x, y, marker='D',color='m')
+
+					plt.show()
+				</code>
+
+				<p>Plotting raster data</p>
+				<p>There are two main methods for plotting a raster, contour/contourf, that plots contour lines or filled contour lines (isobands) and pcolor/pcolormesh, that creates a pseudo-color plot.</p>
+
+				<ul>
+					<li>addcyclic</li>
+					<li>colorbars</li>
+					<li>drawmapscale</li>
+					<li>gcpoints</li>
+					<li>greatcircle</li>
+				</ul>
+				<code>
+					from mpl_toolkits.basemap import Basemap
+					import matplotlib.pyplot as plt
+					from osgeo import gdal
+					from numpy import linspace
+					from numpy import meshgrid
+
+					map = Basemap(projection='tmerc', 
+					              lat_0=0, lon_0=3,
+					              llcrnrlon=1.819757266426611, 
+					              llcrnrlat=41.583851612359275, 
+					              urcrnrlon=1.841589961763497, 
+					              urcrnrlat=41.598674173123)
+
+					ds = gdal.Open("../sample_files/dem.tiff")
+					data = ds.ReadAsArray()
+
+					x = linspace(0, map.urcrnrx, data.shape[1])
+					y = linspace(0, map.urcrnry, data.shape[0])
+
+					xx, yy = meshgrid(x, y)
+
+					map.contourf(xx, yy, data)
+
+					plt.show()
+				</code>
+			</article>
+		</section>
+		<section id="Working_with_shapefiles" class="main-section">
+			<header><h1>Working with shapefiles</h1></header>
+			<p>The way used by Basemap to handle vectorial files is quite different from other libraries, and deserves some attention.</p>
+			<p>Let’s start with the easiest way to plot a shapefile:</p>
+			<code>
+				from mpl_toolkits.basemap import Basemap
+				import matplotlib.pyplot as plt
+
+				map = Basemap(llcrnrlon=-0.5,llcrnrlat=39.8,urcrnrlon=4.,urcrnrlat=43.,
+				             resolution='i', projection='tmerc', lat_0 = 39.5, lon_0 = 1)
+
+				map.drawmapboundary(fill_color='aqua')
+				map.fillcontinents(color='#ddaa66',lake_color='aqua')
+				map.drawcoastlines()
+
+				map.readshapefile('../sample_files/comarques', 'comarques')
+
+				plt.show()
+			</code>
+		</section>
+	</main>
+	<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+</body>
+</html>
